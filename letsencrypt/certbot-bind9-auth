@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+bind9-api-client -d "_acme-challenge.$CERTBOT_DOMAIN" -r TXT update -v "$CERTBOT_VALIDATION"

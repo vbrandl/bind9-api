@@ -1,0 +1,17 @@
+sudo: required
+services:
+  - docker
+script:
+  - docker run --rm -it -v "$(pwd)":/home/rust/src ekidd/rust-musl-builder cargo build --release
+
+before_deploy:
+  - ./ci/before_deploy.sh
+
+deploy:
+  provider: releases
+  file_glob: true
+  file:
+    - deploy/*
+  skip_cleanup: true
+  on:
+    tags: true
