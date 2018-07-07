@@ -2,7 +2,7 @@ sudo: required
 services:
   - docker
 script:
-  - docker run --rm -it -v "$(pwd)":/home/rust/src ekidd/rust-musl-builder sh -c 'chown -R rust . && cargo build --release'
+  - docker run --rm -it -v "$(pwd)":/home/rust/src ekidd/rust-musl-builder sh -c 'sudo chown -R rust . && cargo build --release'
 
 before_deploy:
   - ./ci/before_deploy.sh
