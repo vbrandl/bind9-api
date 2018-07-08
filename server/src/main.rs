@@ -47,7 +47,6 @@ extern crate failure;
 extern crate futures;
 #[macro_use]
 extern crate log;
-extern crate openssl;
 extern crate pretty_env_logger;
 extern crate serde;
 extern crate serde_json;
@@ -60,7 +59,6 @@ use actix_web::{
 };
 use data::{Delete, Update};
 use failure::Error;
-use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 use std::{
     io::Write, process::{Command, Stdio}, sync::Arc,
 };
@@ -149,31 +147,12 @@ fn main() {
         .expect("Cannot parse port");
     let host = matches.value_of("HOST").unwrap_or("0.0.0.0");
     let host = format!("{}:{}", host, port);
-    let key = matches.value_of("KEY");
-    let cert = matches.value_of("CERT");
-    let server = server::new(move || {
+    server::new(move || {
         App::with_state(config.clone())
             .middleware(Logger::default())
             .route("/record", http::Method::POST, update)
             .route("/record", http::Method::DELETE, delete)
-    });
-    match (key, cert) {
-        (Some(k), Some(c)) => {
-            let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
-            builder.set_private_key_file(k, SslFiletype::PEM).unwrap();
-            builder.set_certificate_chain_file(c).unwrap();
-            server.bind_ssl(host, builder)
-        },
-        (None, None) => server.bind(host),
-        (_, _) => panic!("When using TLS, the --cert and --key parameter must be set"),
-    }.unwrap()
-        .run()
-    // server::new(move || {
-    //     App::with_state(config.clone())
-    //         .middleware(Logger::default())
-    //         .route("/record", http::Method::POST, update)
-    //         .route("/record", http::Method::DELETE, delete)
-    // }).bind(host)
-    // .unwrap()
-    // .run();
+    }).bind(host)
+    .unwrap()
+    .run();
 }
