@@ -9,41 +9,28 @@ extern crate futures;
 #[macro_use]
 extern crate log;
 extern crate pretty_env_logger;
+extern crate serde;
 extern crate serde_json;
 
 mod cli;
+mod util;
 
 use actix_web::{
-    error::{self, ErrorInternalServerError, ErrorUnauthorized, JsonPayloadError, ParseError}, http,
-    middleware::Logger, server, App, HttpMessage, HttpRequest, Result,
+    error::{self, ErrorInternalServerError}, http, middleware::Logger, server, App, Result, State,
 };
 use data::{Delete, Update};
 use failure::Error;
-use futures::future::{err as FutErr, Future};
 use std::{
     io::Write, process::{Command, Stdio}, sync::Arc,
 };
-
-#[derive(Debug, Fail)]
-enum ExecuteError {
-    #[fail(display = "Stdin error")]
-    Stdin,
-}
-
-struct Config {
-    token: String,
-    command: String,
-    key_path: String,
-    ok_marker: String,
-    server: String,
-}
+use util::{Config, ExecuteError, Validated};
 
 fn execute_nsupdate(input: &str, config: &Config) -> Result<String, Error> {
     info!("executing update: {}", input);
-    let mut cmd = Command::new(&config.command)
+    let mut cmd = Command::new(config.command())
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .args(&["-k", &config.key_path])
+        .args(&["-k", config.key_path()])
         .spawn()?;
     {
         let stdin = cmd.stdin.as_mut().ok_or(ExecuteError::Stdin)?;
@@ -55,92 +42,53 @@ fn execute_nsupdate(input: &str, config: &Config) -> Result<String, Error> {
     Ok(output)
 }
 
-fn delete(req: HttpRequest<Arc<Config>>) -> Box<Future<Item = &'static str, Error = error::Error>> {
-    let state = req.state().clone();
-    let sig = extract_signature(&req);
-    if sig.is_err() {
-        return Box::new(FutErr(sig.unwrap_err()));
-    }
-    let sig = sig.unwrap();
-    let secret = state.token.clone();
-    Box::new(req.body().from_err().and_then(move |body| {
-        if crypto::verify_signature(secret.as_bytes(), &body, &sig) {
-            let delete: Delete = serde_json::from_slice(&body)
-                .map_err(|e| ErrorInternalServerError(JsonPayloadError::Deserialize(e)))?;
-            info!("Deleting {} record for {}", delete.record(), delete.name());
-            let stdin = format!(
-                "server {}\nupdate delete {} {}\nsend\n",
-                state.server,
-                delete.name(),
-                delete.record()
-            );
-            Ok(execute_nsupdate(&stdin, &state)
-                .map_err(|_| ErrorInternalServerError("Error executing nsupdate"))
-                .and_then(|s| {
-                    if s.contains(&state.ok_marker) {
-                        Ok("OK")
-                    } else {
-                        Err(ErrorInternalServerError("Marker not found"))
-                    }
-                })?)
-        } else {
-            Err(ErrorUnauthorized(ParseError::Header))
-        }
-    }))
-}
-
-fn extract_signature<S>(req: &HttpRequest<S>) -> Result<Vec<u8>> {
-    Ok(req.headers()
-        .get(data::TOKEN_HEADER)
-        .as_ref()
-        .ok_or_else(|| ErrorUnauthorized(ParseError::Header))?
-        .to_str()
-        .map_err(ErrorUnauthorized)
+fn delete(
+    (delete, state): (Validated<Delete>, State<Arc<Config>>),
+) -> Result<&'static str, error::Error> {
+    info!("Deleting {} record for {}", delete.record(), delete.name());
+    let stdin = format!(
+        "server {}\nupdate delete {} {}\nsend\n",
+        state.server(),
+        delete.name(),
+        delete.record()
+    );
+    Ok(execute_nsupdate(&stdin, &state)
+        .map_err(|_| ErrorInternalServerError("Error executing nsupdate"))
         .and_then(|s| {
-            crypto::hex_str_to_bytes(s).map_err(|_| ErrorUnauthorized(ParseError::Header))
-        })
-        .map_err(ErrorUnauthorized)?)
+            if s.contains(state.ok_marker()) {
+                Ok("OK")
+            } else {
+                Err(ErrorInternalServerError("Marker not found"))
+            }
+        })?)
 }
 
-fn update(req: HttpRequest<Arc<Config>>) -> Box<Future<Item = &'static str, Error = error::Error>> {
-    let state = req.state().clone();
-    let sig = extract_signature(&req);
-    if sig.is_err() {
-        return Box::new(FutErr(sig.unwrap_err()));
-    }
-    let sig = sig.unwrap();
-    let secret = state.token.clone();
-    Box::new(req.body().from_err().and_then(move |body| {
-        if crypto::verify_signature(secret.as_bytes(), &body, &sig) {
-            let update: Update = serde_json::from_slice(&body)
-                .map_err(|e| ErrorInternalServerError(JsonPayloadError::Deserialize(e)))?;
-            info!(
-                "Updating {} record for {} with value \"{}\"",
-                update.record(),
-                update.name(),
-                update.value()
-            );
-            let stdin = format!(
-                "server {}\nupdate add {} {} {} {}\nsend\n",
-                state.server,
-                update.name(),
-                update.ttl(),
-                update.record(),
-                update.value()
-            );
-            Ok(execute_nsupdate(&stdin, &state)
-                .map_err(|_| ErrorInternalServerError("Error executing nsupdate"))
-                .and_then(|s| {
-                    if s.contains(&state.ok_marker) {
-                        Ok("OK")
-                    } else {
-                        Err(ErrorInternalServerError("Marker not found"))
-                    }
-                })?)
-        } else {
-            Err(ErrorUnauthorized(ParseError::Header))
-        }
-    }))
+fn update(
+    (update, state): (Validated<Update>, State<Arc<Config>>),
+) -> Result<&'static str, error::Error> {
+    info!(
+        "Updating {} record for {} with value \"{}\"",
+        update.record(),
+        update.name(),
+        update.value()
+    );
+    let stdin = format!(
+        "server {}\nupdate add {} {} {} {}\nsend\n",
+        state.server(),
+        update.name(),
+        update.ttl(),
+        update.record(),
+        update.value()
+    );
+    Ok(execute_nsupdate(&stdin, &state)
+        .map_err(|_| ErrorInternalServerError("Error executing nsupdate"))
+        .and_then(|s| {
+            if s.contains(state.ok_marker()) {
+                Ok("OK")
+            } else {
+                Err(ErrorInternalServerError("Marker not found"))
+            }
+        })?)
 }
 
 fn main() {
@@ -152,13 +100,7 @@ fn main() {
     let key_path = matches.value_of("KEYPATH").unwrap().to_owned();
     let ok_marker = matches.value_of("OKMARK").unwrap_or("").to_owned();
     let server = matches.value_of("SERVER").unwrap_or("127.0.0.1").to_owned();
-    let config = Arc::new(Config {
-        token,
-        command,
-        key_path,
-        ok_marker,
-        server,
-    });
+    let config = Arc::new(Config::new(token, command, key_path, ok_marker, server));
     let port: u16 = matches
         .value_of("PORT")
         .unwrap_or("8000")
