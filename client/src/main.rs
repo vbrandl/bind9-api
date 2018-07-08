@@ -45,6 +45,8 @@ extern crate crypto;
 extern crate data;
 extern crate failure;
 #[macro_use]
+extern crate hyper;
+#[macro_use]
 extern crate log;
 extern crate openssl_probe;
 extern crate pretty_env_logger;
@@ -64,6 +66,8 @@ use data::{ApiError, Delete, Record, Update};
 use std::borrow::Cow;
 
 type Result<T> = std::result::Result<T, Error>;
+
+header! { (XApiToken, data::TOKEN_HEADER) => [String] }
 
 #[derive(Eq, PartialEq, Clone, Copy)]
 enum Method {
@@ -114,7 +118,7 @@ fn call_api<D: serde::Serialize>(
         client.post(&url)
     } else {
         client.delete(&url)
-    }.header(data::XApiToken(signature))
+    }.header(XApiToken(signature))
         .json(&data)
         .send()?)
 }
