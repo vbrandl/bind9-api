@@ -49,5 +49,7 @@ pub fn parse_args() -> ::clap::ArgMatches<'static> {
         (@arg PORT: -p --port +takes_value "Port to listen on (Defaults to 8000)")
         (@arg HOST: -h --host +takes_value "Host to listen on (Defaults to 0.0.0.0)")
         (@arg SERVER: -s --server +takes_value "Bind server (Defaults to 127.0.0.1)")
+        (@arg CERT: -c --cert +takes_value "TLS certificate chain file")
+        (@arg KEY: -k --key +takes_value "TLS key file")
     ).get_matches()
 }
