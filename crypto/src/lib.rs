@@ -38,6 +38,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#![deny(missing_docs)]
+
+//! Helper crate for cryptographic operations.
 
 extern crate failure;
 extern crate hex;
@@ -53,16 +56,19 @@ use ring::{digest, hmac};
 
 type Result<T> = std::result::Result<T, Error>;
 
+/// Converts a byte slice to a lowercase hex string.
 pub fn bytes_to_hex_str(bytes: &[u8]) -> Result<String> {
     let mut output = String::new();
     bytes.write_hex(&mut output)?;
     Ok(output)
 }
 
+/// Converts a hey string to a vec of bytes.
 pub fn hex_str_to_bytes(hex_str: &str) -> Result<Vec<u8>> {
     Ok(Vec::from_hex(hex_str)?)
 }
 
+/// Verifies a HMAC SHA256 signature.
 pub fn verify_signature(key: &[u8], msg: &[u8], signature: &[u8]) -> bool {
     let key = hmac::VerificationKey::new(&digest::SHA256, key);
     hmac::verify(&key, msg, signature)
@@ -70,6 +76,7 @@ pub fn verify_signature(key: &[u8], msg: &[u8], signature: &[u8]) -> bool {
         .unwrap_or(false)
 }
 
+/// Creates a HMAC SHA256 signature.
 pub fn sign(key: &[u8], msg: &[u8]) -> Vec<u8> {
     let key = hmac::SigningKey::new(&digest::SHA256, key);
     let signature = hmac::sign(&key, msg);
