@@ -8,6 +8,10 @@ cache:
   directories:
     - ./target/
 
+notifications:
+  email:
+    on_success: never
+
 before_deploy:
   - ./ci/before_deploy.sh
 
