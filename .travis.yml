@@ -1,0 +1,19 @@
+sudo: required
+services:
+  - docker
+script:
+  - docker run --rm -it -v "$(pwd)":/home/rust/src ekidd/rust-musl-builder sh -c 'sudo chown -R rust . && cargo test && cargo build --release'
+
+before_deploy:
+  - ./ci/before_deploy.sh
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "GHjOIiBMx3/0hqRsg4fAaNKeTbcgmS55AvzHGQUB8ZYIxbhRysIGk6ovdBS5RHE9t6uPlp3zdZ8Iw9s63zTH+z/l+eLA+9quT+Ls9g6/MKpTfmLgu+Fg5ilJllEzDG1MBEbneoU38hpBECJuoUX78JN8ss7Xu61vgXf/5R2lBtoxwqMLwUse0vbHnR8NQNsBKrOC1XETWRXTBnC1X2dJ4JbI5FprihHtxmkh4mC+gJRm/1RIO+oegRnR5H8d/w3A9cou750neR9rESh6NBZBgjLR+odwE+nZRJXqoYfhExKAa9MAK1HAj0f9IXGw4tRApUF4fU0dKHa5E4I2MjNJoLw88lG6Rt/+897LJrGN+Csf65vmvLANlKlhdme/+nyG0vOcTuuv5tTl/2DaytShw2Jjp7eT4iHVyS0/nuk2Z80nZyhlBoDyg2VwBfMoMYslphqbV3PVBnsnTp7LOBb7m6WpHZIB/QsXVUMhIoQGE7kgZxSA+TfiX5BGO7fYihFqdoqB4ddEm63ciJVE3ZQv2wYgHIuStoY7wu8nPzK4X0h5r84BaGGnuiL1nyKe3NgTHdU59LHLbM66//M0rJzxqjV7SjnQag/F8G/EbD0aq6CF4fXOUvIf+vXBVOPR45QTayjdbljm5GLPoGqHNyaaULsh5O2W4onn40PcaXKOkSs="
+  file_glob: true
+  file:
+    - deploy/*
+  skip_cleanup: true
+  on:
+    tags: true

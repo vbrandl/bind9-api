@@ -1,0 +1,13 @@
+[package]
+name = "crypto"
+version = "0.1.0"
+authors = ["Valentin Brandl <vbrandl@riseup.net>"]
+license = "MIT/Apache-2.0"
+
+[dependencies]
+failure = "0.1.1"
+hex = "0.3.2"
+ring = "0.12.1"
+
+[dev-dependencies]
+proptest = "0.8.1"

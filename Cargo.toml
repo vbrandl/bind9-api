@@ -1,0 +1,6 @@
+[workspace]
+
+members = [ "server", "client", "data", "crypto" ]
+
+[profile.release]
+lto = true
