@@ -1,5 +1,9 @@
 # BIND9 API
 
+[![Travis Build Status](https://travis-ci.org/vbrandl/bind9-api.svg?branch=master)](https://travis-ci.org/vbrandl/bind9-api)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/vbrandl/bind9-api/blob/master/LICENSE-MIT)
+[![License](https://img.shields.io/badge/license-Apache-green.svg)](https://github.com/vbrandl/bind9-api/blob/master/LICENSE-APACHE)
+
 This is an attempt to implement an API to create, update or delete DNS records
 on a BIND9 DNS server.
 
@@ -107,6 +111,14 @@ provide TLS functionality by itself.
 In `letsencrypt/`, two example scripts can be found to use the client as a
 certbot hook for DNS challenges. It assumes that the client is located somewhere
 in `$PATH` and that the configurations file exists.
+
+To obtain a new certificate, certbot can be invoked as followed:
+
+```
+certbot certonly -n --agree-tos --server https://acme-v02.api.letsencrypt.org/directory --preferred-challenges=dns-01
+--manual --manual-auth-hook /usr/lib/letsencrypt-bind9/certbot-bind9-auth --manual-cleanup-hook
+/usr/lib/letsencrypt-bind9/certbot-bind9-cleanup --manual-public-ip-logging-ok -d example.com -d '*.example.com'
+```
 
 ## License
 
