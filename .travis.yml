@@ -4,6 +4,10 @@ services:
 script:
   - docker run --rm -it -v "$(pwd)":/home/rust/src ekidd/rust-musl-builder sh -c 'sudo chown -R rust . && cargo test && cargo build --release'
 
+cache:
+  directories:
+    - ./target/
+
 before_deploy:
   - ./ci/before_deploy.sh
 
