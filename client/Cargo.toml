@@ -1,6 +1,6 @@
 [package]
 name = "bind9-api-client"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Valentin Brandl <vbrandl@riseup.net>"]
 description = "Client for the BIND9 API"
 license = "MIT/Apache-2.0"
