@@ -112,6 +112,14 @@ In `letsencrypt/`, two example scripts can be found to use the client as a
 certbot hook for DNS challenges. It assumes that the client is located somewhere
 in `$PATH` and that the configurations file exists.
 
+To obtain a new certificate, certbot can be invoked as followed:
+
+```
+certbot certonly -n --agree-tos --server https://acme-v02.api.letsencrypt.org/directory --preferred-challenges=dns-01
+--manual --manual-auth-hook /usr/lib/letsencrypt-bind9/certbot-bind9-auth --manual-cleanup-hook
+/usr/lib/letsencrypt-bind9/certbot-bind9-cleanup --manual-public-ip-logging-ok -d example.com -d '*.example.com'
+```
+
 ## License
 
 This project is licensed under either of
