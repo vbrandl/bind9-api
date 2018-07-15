@@ -1,5 +1,9 @@
 # BIND9 API
 
+[![Travis Build Status](https://travis-ci.org/vbrandl/bind9-api.svg?branch=master)](https://travis-ci.org/vbrandl/bind9-api)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/vbrandl/bind9-api/blob/master/LICENSE-MIT)
+[![License](https://img.shields.io/badge/license-Apache-green.svg)](https://github.com/vbrandl/bind9-api/blob/master/LICENSE-APACHE)
+
 This is an attempt to implement an API to create, update or delete DNS records
 on a BIND9 DNS server.
 
