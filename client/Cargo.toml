@@ -6,7 +6,7 @@ description = "Client for the BIND9 API"
 license = "MIT/Apache-2.0"
 
 [dependencies]
-clap = "2.32.0"
+clap = "2.33.0"
 crypto = { path = "../crypto" }
 data = { path = "../data" }
 failure = "0.1.1"
