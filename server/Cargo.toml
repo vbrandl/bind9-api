@@ -11,7 +11,7 @@ clap = "2.33.0"
 crypto = { path = "../crypto" }
 data = { path = "../data" }
 failure = "0.1.1"
-futures = "0.1.21"
+futures = "0.1.27"
 log = "0.4.6"
 pretty_env_logger = "0.3.0"
 serde = "1.0.91"
