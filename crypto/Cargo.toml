@@ -10,4 +10,4 @@ hex = "0.3.2"
 ring = "0.12.1"
 
 [dev-dependencies]
-proptest = "0.8.7"
+proptest = "0.9.3"
