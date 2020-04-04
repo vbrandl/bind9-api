@@ -10,7 +10,7 @@ clap = "2.33.0"
 crypto = { path = "../crypto" }
 data = { path = "../data" }
 failure = "0.1.7"
-hyper = "0.12.35"
+hyper = "0.13.4"
 log = "0.4.8"
 openssl-probe = "0.1.2"
 pretty_env_logger = "0.4.0"
