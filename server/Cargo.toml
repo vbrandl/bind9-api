@@ -6,7 +6,7 @@ description = "Web API to create, update and remove DNS entries in bind9"
 license = "MIT/Apache-2.0"
 
 [dependencies]
-actix-web = "0.7.19"
+actix-web = "1.0.4"
 clap = "2.33.0"
 crypto = { path = "../crypto" }
 data = { path = "../data" }
