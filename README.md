@@ -7,6 +7,19 @@
 This is an attempt to implement an API to create, update or delete DNS records
 on a BIND9 DNS server.
 
+## Building
+
+To compile the code, you first need to [install Rust](https://rustup.rs/). Then
+you can run
+
+```
+cargo build --release
+```
+
+in the project root. The server and client binary will be located in
+`./target/release/bind9-api` and `./target/release/bind9-api-client`
+respectively.
+
 ## Server
 
 The server will wait for incoming requests and uses the `nsupdate` command to
