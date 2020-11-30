@@ -104,7 +104,7 @@ pub struct Validated<T>(T);
 
 impl<T: 'static + ::serde::de::DeserializeOwned> FromRequest<Arc<Config>> for Validated<T> {
     type Config = ();
-    type Result = Box<Future<Item = Self, Error = Error>>;
+    type Result = Box<dyn Future<Item = Self, Error = Error>>;
 
     fn from_request(req: &HttpRequest<Arc<Config>>, _: &Self::Config) -> Self::Result {
         let state = req.state().clone();
@@ -134,7 +134,8 @@ impl<T> Deref for Validated<T> {
 }
 
 fn extract_signature<S>(req: &HttpRequest<S>) -> Result<Vec<u8>> {
-    Ok(req.headers()
+    Ok(req
+        .headers()
         .get(::data::TOKEN_HEADER)
         .as_ref()
         .ok_or_else(|| ErrorUnauthorized(ParseError::Header))?
