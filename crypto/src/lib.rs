@@ -55,10 +55,8 @@ use ring::{digest, hmac};
 type Result<T> = std::result::Result<T, Error>;
 
 /// Converts a byte slice to a lowercase hex string.
-pub fn bytes_to_hex_str(bytes: &[u8]) -> Result<String> {
-    let mut output = String::new();
-    bytes.write_hex(&mut output)?;
-    Ok(output)
+pub fn bytes_to_hex_str(bytes: &[u8]) -> String {
+    bytes.encode_hex::<String>()
 }
 
 /// Converts a hey string to a vec of bytes.

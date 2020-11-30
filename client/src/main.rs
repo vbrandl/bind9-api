@@ -106,7 +106,7 @@ fn call_api<D: serde::Serialize>(
     let data_s = serde_json::to_string(&data)?;
     info!("body: {}", data_s);
     let signature = crypto::sign(config.secret.as_bytes(), data_s.as_bytes());
-    let signature = crypto::bytes_to_hex_str(&signature)?;
+    let signature = crypto::bytes_to_hex_str(&signature);
     let client = reqwest::Client::new();
     let url = format!("{}/record", config.host);
     Ok(if method == Method::POST {
